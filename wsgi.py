@@ -7,10 +7,10 @@ from datetime import datetime
 from logging.config import dictConfig
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, make_response
 from db import get_session, Post, Link, Visit
-from werkzeug.contrib.fixers import ProxyFix
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 application = Flask(__name__)
-application.wsgi_app = ProxyFix(application.wsgi_app, num_proxies=1)
+application = ProxyFix(application.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1, x_prefix=1)
 
 application.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 application.config['SERVER_NAME'] = os.getenv('SERVER_NAME')
