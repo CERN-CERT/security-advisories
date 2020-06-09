@@ -69,7 +69,7 @@ def newlink():
         s.commit()
         logging.info(link)
         flash('Link added for {}: {}'.format(link_for, url_for('view', uid=uid, _external=True, _scheme='https')))
-        return redirect(url_for('admin'))
+        return redirect(url_for('admin', _scheme='https'))
     finally:
         s.close()
 
@@ -82,7 +82,7 @@ def send():
     try:
         s.add(Post(title=title, body=body))
         s.commit()
-        return redirect(url_for('admin'))
+        return redirect(url_for('admin', _scheme='https'))
     finally:
         s.close()
 
