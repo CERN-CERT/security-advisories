@@ -7,8 +7,11 @@ from datetime import datetime
 from logging.config import dictConfig
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, make_response
 from db import get_session, Post, Link, Visit
+from werkzeug.contrib.fixers import ProxyFix
 
 application = Flask(__name__)
+application.wsgi_app = ProxyFix(application.wsgi_app, num_proxies=1)
+
 application.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 application.config['SERVER_NAME'] = os.getenv('SERVER_NAME')
 application.config['PREFERRED_URL_SCHEME'] = 'https'
@@ -69,7 +72,7 @@ def newlink():
         s.commit()
         logging.info(link)
         flash('Link added for {}: {}'.format(link_for, url_for('view', uid=uid, _external=True, _scheme='https')))
-        return redirect(url_for('admin', _scheme='https'))
+        return redirect(url_for('admin'))
     finally:
         s.close()
 
@@ -82,7 +85,7 @@ def send():
     try:
         s.add(Post(title=title, body=body))
         s.commit()
-        return redirect(url_for('admin', _scheme='https'))
+        return redirect(url_for('admin'))
     finally:
         s.close()
 
