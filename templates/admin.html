@@ -1,0 +1,65 @@
+<html>
+
+<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+        integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+</head>
+
+<body>
+    <div class="container">
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-primary">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        {% if posts %}
+        <div class="py-5 text-center">
+            <h3>Current posts</h3>
+        </div>
+        <table class="table table-striped" style="table-layout:fixed;">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Title</th>
+                    <th scope="col">Create new link</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for (pid, title) in posts %}
+                <tr>
+                    <th scope="row"><a href="{{ url_for('info', pid=pid) }}">{{ pid }}</a></th>
+                    <td><a href="{{ url_for('info', pid=pid) }}">{{ title }}</a></td>
+                    <td>
+                        <form method="POST" action="{{ url_for('newlink') }}" class="form-inline">
+                            <label for="linkfor">Link for:</label>&nbsp;&nbsp;
+                            <input type="text" width="200" class="form-control" id="linkfor" name="linkfor">&nbsp;&nbsp;
+                            <input type="hidden" name="post_id" value="{{ pid }}">
+                            <input type="submit" class="btn btn-success" value="Add">
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
+        <div class="py-5 text-center">
+            <h3>Upload new post</h3>
+        </div>
+        <form method="POST" action="{{ url_for('send') }}">
+            <div class="form-group">
+                <label for="title">Title</label>
+                <input type="text" class="form-control" id="title" name="title">
+            </div>
+            <div class="form-group">
+                <label for="md">Markdown text</label>
+                <textarea class="form-control" id="md" name="md" rows="10"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+</body>
+
+</html>
