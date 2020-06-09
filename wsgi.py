@@ -29,26 +29,7 @@ dictConfig({
     }
 })
 
-
-@application.route('/<uid>')
-def view(uid):
-    # import ipdb; ipdb.set_trace()
-    s = get_session()
-    link = s.query(Link).filter_by(uid=uid).one()
-    title = link.post.title
-    md = markdown2.markdown(link.post.body)
-    s.add(Visit(link_id=link.id,
-                dt=datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                ip=request.remote_addr,
-                ref=request.referrer))
-    s.commit()
-    s.close()
-    tracker = hashlib.sha256(uid.encode()).hexdigest()[:16]
-    resp = make_response(render_template('post.html', body=md, title=title, tracker=tracker))
-    resp.headers['Referrer-Policy'] = 'unsafe-url'
-    return resp
-
-@application.route('/info/<pid>')
+@application.route('/sekkreturl/info/<pid>')
 def info(pid):
     s = get_session()
     post = s.query(Post).filter_by(id=pid).one()
@@ -66,7 +47,7 @@ def info(pid):
     s.close()
     return render_template('info.html', title=title, md=md, links=links)
 
-@application.route('/admin')
+@application.route('/sekkreturl/admin')
 def admin():
     s = get_session()
     posts = [(p.id, p.title) for p in s.query(Post).all()]
@@ -74,7 +55,7 @@ def admin():
     logging.info(posts)
     return render_template('admin.html', posts=posts)
 
-@application.route('/newlink', methods=['POST'])
+@application.route('/sekkreturl/newlink', methods=['POST'])
 def newlink():
     uid = str(uuid.uuid1()).replace('-','')
     link_for = request.form['linkfor']
@@ -88,7 +69,7 @@ def newlink():
     flash('Link added for {}: {}'.format(link_for, url_for('view', uid=uid, _external=True)))
     return redirect(url_for('admin'))
 
-@application.route('/send', methods=['POST'])
+@application.route('/sekkreturl/send', methods=['POST'])
 def send():
     title = request.form['title']
     body = request.form['md']
@@ -98,6 +79,24 @@ def send():
     s.commit()
     s.close()
     return redirect(url_for('admin'))
+
+@application.route('/<uid>')
+def view(uid):
+    logging.info('Viewing uid %s', uid)
+    s = get_session()
+    link = s.query(Link).filter_by(uid=uid).one()
+    title = link.post.title
+    md = markdown2.markdown(link.post.body)
+    s.add(Visit(link_id=link.id,
+                dt=datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                ip=request.remote_addr,
+                ref=request.referrer))
+    s.commit()
+    s.close()
+    tracker = hashlib.sha256(uid.encode()).hexdigest()[:16]
+    resp = make_response(render_template('post.html', body=md, title=title, tracker=tracker))
+    resp.headers['Referrer-Policy'] = 'unsafe-url'
+    return resp
 
 if __name__ == "__main__":
     application.run()
