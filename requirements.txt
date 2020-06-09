@@ -2,6 +2,6 @@ gunicorn
 flask
 flask-sqlalchemy
 sqlalchemy
-markdown2
+markdown
 psycopg2-binary
 Flask-Dance

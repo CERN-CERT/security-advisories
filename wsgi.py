@@ -2,7 +2,7 @@ import os
 import hashlib
 import uuid
 import logging
-import markdown2
+import markdown
 from datetime import datetime
 from logging.config import dictConfig
 from flask import Flask, render_template, request, redirect, url_for, flash, make_response, current_app
@@ -18,45 +18,45 @@ application.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 application.config['SERVER_NAME'] = os.getenv('SERVER_NAME')
 
 
-oauth = OAuth2ConsumerBlueprint(
-    'cern_oauth',
-    __name__,
-    client_id=os.getenv('OAUTH_CLIENT_ID'),
-    client_secret=os.getenv('OAUTH_CLIENT_SECRET'),
-    token_url='https://oauth.web.cern.ch/OAuth/Token',
-    authorization_url='https://oauth.web.cern.ch/OAuth/Authorize',
-    login_url='/oauth/cern',
-    authorized_url='/oauth/cern/authorized',
-)
-application.oauth = oauth
-application.register_blueprint(oauth)
+# oauth = OAuth2ConsumerBlueprint(
+    # 'cern_oauth',
+    # __name__,
+    # client_id=os.getenv('OAUTH_CLIENT_ID'),
+    # client_secret=os.getenv('OAUTH_CLIENT_SECRET'),
+    # token_url='https://oauth.web.cern.ch/OAuth/Token',
+    # authorization_url='https://oauth.web.cern.ch/OAuth/Authorize',
+    # login_url='/oauth/cern',
+    # authorized_url='/oauth/cern/authorized',
+# )
+# application.oauth = oauth
+# application.register_blueprint(oauth)
 
 
-def require_auth(func):
-    def wrapper(*args, **kwargs):
-        return func(*args, **kwargs)
-        if current_app.oauth.token:
-            try:
-                user_details = oauth.session.get(
-                    'https://oauthresource.web.cern.ch/api/User')
-                user_details.raise_for_status()
-                # user_data = user_details.json()
-                # username = user_data['username'].strip()
-                egroup_membership = current_app.oauth.session.get(
-                    'https://oauthresource.web.cern.ch/api/Groups')
-                egroup_membership.raise_for_status()
-                groups = egroup_membership.json()['groups']
-                logging.debug('OAuth groups: %s', groups)
-                if any(group in groups for group in current_app.config['app']['auth_egroups']):
-                    return func(*args, **kwargs)
-                else:
-                    return 'Unauthorized', 401
-            except (InvalidGrantError, TokenExpiredError) as e:
-                logging.warn(e)
-                pass
-        return redirect(url_for('cern_oauth.login'))
-    wrapper.func_name = func.func_name
-    return wrapper
+# def require_auth(func):
+    # def wrapper(*args, **kwargs):
+        # return func(*args, **kwargs)
+        # if current_app.oauth.token:
+            # try:
+                # user_details = oauth.session.get(
+                    # 'https://oauthresource.web.cern.ch/api/User')
+                # user_details.raise_for_status()
+                # # user_data = user_details.json()
+                # # username = user_data['username'].strip()
+                # egroup_membership = current_app.oauth.session.get(
+                    # 'https://oauthresource.web.cern.ch/api/Groups')
+                # egroup_membership.raise_for_status()
+                # groups = egroup_membership.json()['groups']
+                # logging.debug('OAuth groups: %s', groups)
+                # if any(group in groups for group in current_app.config['app']['auth_egroups']):
+                    # return func(*args, **kwargs)
+                # else:
+                    # return 'Unauthorized', 401
+            # except (InvalidGrantError, TokenExpiredError) as e:
+                # logging.warn(e)
+                # pass
+        # return redirect(url_for('cern_oauth.login'))
+    # wrapper.func_name = func.func_name
+    # return wrapper
 
 
 dictConfig({
@@ -76,12 +76,16 @@ dictConfig({
 })
 
 
-@require_auth
-@application.route('/info/<pid>')
+# @require_auth
+@application.route('/sekkreturl/info/<pid>', methods=['GET', 'POST'])
 def info(pid):
     s = get_session()
     try:
         post = s.query(Post).filter_by(id=pid).one()
+        if request.method == 'POST':
+            post.title = request.form['title']
+            post.body = request.form['body']
+            s.commit()
         title = post.title
         md = post.body
         links = list([{
@@ -98,8 +102,8 @@ def info(pid):
         s.close()
 
 
-@require_auth
-@application.route('/admin')
+# @require_auth
+@application.route('/sekkreturl/admin')
 def admin():
     s = get_session()
     posts = [(p.id, p.title) for p in s.query(Post).all()]
@@ -108,8 +112,8 @@ def admin():
     return render_template('admin.html', posts=posts)
 
 
-@require_auth
-@application.route('/newlink', methods=['POST'])
+# @require_auth
+@application.route('/sekkreturl/newlink', methods=['POST'])
 def newlink():
     uid = str(uuid.uuid1()).replace('-', '')
     link_for = request.form['linkfor']
@@ -126,8 +130,8 @@ def newlink():
         s.close()
 
 
-@require_auth
-@application.route('/send', methods=['POST'])
+# @require_auth
+@application.route('/sekkreturl/send', methods=['POST'])
 def send():
     title = request.form['title']
     body = request.form['md']
@@ -150,7 +154,7 @@ def view(uid):
         if link is None:
             return '', 404
         title = link.post.title
-        md = markdown2.markdown(link.post.body)
+        md = markdown.markdown(link.post.body, extensions=['tables'])
         s.add(Visit(link_id=link.id,
                     dt=datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                     ip=request.remote_addr,
