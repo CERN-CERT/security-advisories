@@ -12,6 +12,12 @@
             {{ body | safe }}
         </div>
     </div>
+    <script type="text/javascript">
+        document.addEventListener('copy', (event) => {
+            event.clipboardData.setData('text', document.getSelection() + '\n{{tracker}}');
+            event.preventDefault();
+        });
+    </script>
 </body>
 
 </html>

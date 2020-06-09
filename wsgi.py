@@ -1,4 +1,5 @@
 import os
+import hashlib
 import uuid
 import logging
 import markdown2
@@ -7,10 +8,10 @@ from logging.config import dictConfig
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, make_response
 from db import get_session, Post, Link, Visit
 
-app = Flask(__name__)
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
-app.config['SERVER_NAME'] = os.getenv('SERVER_NAME')
-app.config['PREFERRED_URL_SCHEME'] = 'https'
+application = Flask(__name__)
+application.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+application.config['SERVER_NAME'] = os.getenv('SERVER_NAME')
+application.config['PREFERRED_URL_SCHEME'] = 'https'
 
 dictConfig({
     'version': 1,
@@ -29,7 +30,7 @@ dictConfig({
 })
 
 
-@app.route('/<uid>')
+@application.route('/<uid>')
 def view(uid):
     # import ipdb; ipdb.set_trace()
     s = get_session()
@@ -42,11 +43,12 @@ def view(uid):
                 ref=request.referrer))
     s.commit()
     s.close()
-    resp = make_response(render_template('post.html', body=md, title=title))
+    tracker = hashlib.sha256(uid.encode()).hexdigest()[:16]
+    resp = make_response(render_template('post.html', body=md, title=title, tracker=tracker))
     resp.headers['Referrer-Policy'] = 'unsafe-url'
     return resp
 
-@app.route('/info/<pid>')
+@application.route('/info/<pid>')
 def info(pid):
     s = get_session()
     post = s.query(Post).filter_by(id=pid).one()
@@ -64,7 +66,7 @@ def info(pid):
     s.close()
     return render_template('info.html', title=title, md=md, links=links)
 
-@app.route('/admin')
+@application.route('/admin')
 def admin():
     s = get_session()
     posts = [(p.id, p.title) for p in s.query(Post).all()]
@@ -72,7 +74,7 @@ def admin():
     logging.info(posts)
     return render_template('admin.html', posts=posts)
 
-@app.route('/newlink', methods=['POST'])
+@application.route('/newlink', methods=['POST'])
 def newlink():
     uid = str(uuid.uuid1()).replace('-','')
     link_for = request.form['linkfor']
@@ -86,7 +88,7 @@ def newlink():
     flash('Link added for {}: {}'.format(link_for, url_for('view', uid=uid, _external=True)))
     return redirect(url_for('admin'))
 
-@app.route('/send', methods=['POST'])
+@application.route('/send', methods=['POST'])
 def send():
     title = request.form['title']
     body = request.form['md']
@@ -98,4 +100,4 @@ def send():
     return redirect(url_for('admin'))
 
 if __name__ == "__main__":
-    app.run()
+    application.run()
