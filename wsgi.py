@@ -95,6 +95,7 @@ def info(pid):
         title = post.title
         md = post.body
         links = list([{
+            'id': link.id,
             'link_for': link.link_for,
             'href': url_for('view', uid=link.uid, _external=True, _scheme='https'),
             'visits': [{
@@ -131,6 +132,20 @@ def newlink():
         s.commit()
         logging.info(link)
         flash('Link added for {}: {}'.format(link_for, url_for('view', uid=uid, _external=True, _scheme='https')))
+        return redirect(url_for('admin'))
+    finally:
+        s.close()
+
+
+# @require_auth
+@application.route('/sekkreturl/dellink/<linkid>', methods=['POST'])
+def dellink(linkid):
+    s = get_session()
+    try:
+        link = s.query(Link).filter_by(id=linkid).one()
+        if request.form['action'] == 'Delete':
+            s.delete(link)
+            s.commit()
         return redirect(url_for('admin'))
     finally:
         s.close()
