@@ -83,7 +83,7 @@ def info(pid):
     try:
         post = s.query(Post).filter_by(id=pid).one()
         if request.method == 'POST':
-            if request.form['action'] == 'delete':
+            if request.form['action'] == 'Delete':
                 s.query(Post).filter_by(id=pid).delete()
                 s.commit()
                 return redirect(url_for('admin'))
