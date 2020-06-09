@@ -10,7 +10,7 @@ from db import get_session, Post, Link, Visit
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 application = Flask(__name__)
-application = ProxyFix(application.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1, x_prefix=1)
+application.wsgi_app = ProxyFix(application.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1, x_prefix=1)
 
 application.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 application.config['SERVER_NAME'] = os.getenv('SERVER_NAME')
