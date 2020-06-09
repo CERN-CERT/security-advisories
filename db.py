@@ -23,7 +23,7 @@ class Link(Base):
     link_for = Column(String(100))
     uid = Column(String(100))
     post_id = Column(Integer, ForeignKey('post.id'))
-    post = relationship('Post', backref=backref('links', cascade='all, delete'))
+    post = relationship('Post', cascade='all, delete', backref=backref('links'))
 
 
 class Visit(Base):
@@ -31,7 +31,7 @@ class Visit(Base):
 
     id = Column(Integer, primary_key=True)
     link_id = Column(Integer, ForeignKey('link.id'))
-    link = relationship('Link', backref=backref('visits', cascade='all, delete'))
+    link = relationship('Link', cascade='all, delete', backref=backref('visits'))
     dt = Column(String(100))
     ip = Column(String(100))
     ref = Column(String(1000))

@@ -11,6 +11,24 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_dance.consumer import OAuth2ConsumerBlueprint
 from oauthlib.oauth2.rfc6749.errors import InvalidGrantError, TokenExpiredError
 
+
+# dictConfig({
+    # 'version': 1,
+    # 'formatters': {'default': {
+        # 'format': '[%(asctime)s] %(levelname)s: %(message)s',
+    # }},
+    # 'handlers': {'wsgi': {
+        # 'class': 'logging.StreamHandler',
+        # 'stream': 'ext://flask.logging.wsgi_errors_stream',
+        # 'formatter': 'default'
+    # }},
+    # 'root': {
+        # 'level': 'INFO',
+        # 'handlers': ['wsgi']
+    # }
+# })
+
+
 application = Flask(__name__)
 application.wsgi_app = ProxyFix(application.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1, x_prefix=1)
 
@@ -57,23 +75,6 @@ application.config['SERVER_NAME'] = os.getenv('SERVER_NAME')
         # return redirect(url_for('cern_oauth.login'))
     # wrapper.func_name = func.func_name
     # return wrapper
-
-
-dictConfig({
-    'version': 1,
-    'formatters': {'default': {
-        'format': '[%(asctime)s] %(levelname)s: %(message)s',
-    }},
-    'handlers': {'wsgi': {
-        'class': 'logging.StreamHandler',
-        'stream': 'ext://flask.logging.wsgi_errors_stream',
-        'formatter': 'default'
-    }},
-    'root': {
-        'level': 'INFO',
-        'handlers': ['wsgi']
-    }
-})
 
 
 # @require_auth
