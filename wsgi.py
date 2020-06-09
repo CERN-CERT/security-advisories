@@ -8,7 +8,9 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for, f
 from db import get_session, Post, Link, Visit
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY ')
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+app.config['SERVER_NAME'] = os.getenv('SERVER_NAME')
+app.config['PREFERRED_URL_SCHEME'] = 'https'
 
 dictConfig({
     'version': 1,

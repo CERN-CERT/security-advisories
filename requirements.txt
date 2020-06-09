@@ -3,3 +3,4 @@ flask
 flask-sqlalchemy
 sqlalchemy
 markdown2
+psycopg2-binary
