@@ -37,7 +37,7 @@ def info(pid):
     md = post.body
     links = list([{
         'link_for': link.link_for,
-        'href': url_for('view', uid=link.uid, _external=True),
+        'href': url_for('view', uid=link.uid, _external=True, _scheme='https'),
         'visits': [{
             'dt': v.dt,
             'ip': v.ip,
@@ -66,7 +66,7 @@ def newlink():
     s.commit()
     s.close()
     logging.info(link)
-    flash('Link added for {}: {}'.format(link_for, url_for('view', uid=uid, _external=True)))
+    flash('Link added for {}: {}'.format(link_for, url_for('view', uid=uid, _external=True, _scheme='https')))
     return redirect(url_for('admin'))
 
 @application.route('/sekkreturl/send', methods=['POST'])
