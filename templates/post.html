@@ -964,10 +964,8 @@
 </head>
 
 <body>
-    <div class="container">
-        <div class="jumbotron">
-            {{ body | safe }}
-        </div>
+    <div class="container-fluid">
+        {{ body | safe }}
     </div>
     <script type="text/javascript">
         document.addEventListener('copy', (event) => {
