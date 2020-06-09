@@ -154,7 +154,7 @@ def view(uid):
         if link is None:
             return '', 404
         title = link.post.title
-        md = markdown.markdown(link.post.body, extensions=['tables'])
+        md = markdown.markdown(link.post.body, extensions=['tables', 'fenced_code', 'sane_lists'])
         s.add(Visit(link_id=link.id,
                     dt=datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                     ip=request.remote_addr,
