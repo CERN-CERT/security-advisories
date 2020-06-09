@@ -83,9 +83,14 @@ def info(pid):
     try:
         post = s.query(Post).filter_by(id=pid).one()
         if request.method == 'POST':
-            post.title = request.form['title']
-            post.body = request.form['body']
-            s.commit()
+            if request.form['action'] == 'delete':
+                s.query(Post).filter_by(id=pid).delete()
+                s.commit()
+                return redirect(url_for('admin'))
+            else:
+                post.title = request.form['title']
+                post.body = request.form['body']
+                s.commit()
         title = post.title
         md = post.body
         links = list([{
