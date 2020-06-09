@@ -32,20 +32,22 @@ dictConfig({
 @application.route('/sekkreturl/info/<pid>')
 def info(pid):
     s = get_session()
-    post = s.query(Post).filter_by(id=pid).one()
-    title = post.title
-    md = post.body
-    links = list([{
-        'link_for': link.link_for,
-        'href': url_for('view', uid=link.uid, _external=True, _scheme='https'),
-        'visits': [{
-            'dt': v.dt,
-            'ip': v.ip,
-            'ref': v.ref
-        } for v in link.visits]
-    } for link in post.links])
-    s.close()
-    return render_template('info.html', title=title, md=md, links=links)
+    try:
+        post = s.query(Post).filter_by(id=pid).one()
+        title = post.title
+        md = post.body
+        links = list([{
+            'link_for': link.link_for,
+            'href': url_for('view', uid=link.uid, _external=True, _scheme='https'),
+            'visits': [{
+                'dt': v.dt,
+                'ip': v.ip,
+                'ref': v.ref
+            } for v in link.visits]
+        } for link in post.links])
+        return render_template('info.html', title=title, md=md, links=links)
+    finally:
+        s.close()
 
 @application.route('/sekkreturl/admin')
 def admin():
@@ -61,13 +63,15 @@ def newlink():
     link_for = request.form['linkfor']
     post_id = int(request.form['post_id'])
     s = get_session()
-    link = Link(link_for=link_for, uid=uid, post_id=post_id)
-    s.add(link)
-    s.commit()
-    s.close()
-    logging.info(link)
-    flash('Link added for {}: {}'.format(link_for, url_for('view', uid=uid, _external=True, _scheme='https')))
-    return redirect(url_for('admin'))
+    try:
+        link = Link(link_for=link_for, uid=uid, post_id=post_id)
+        s.add(link)
+        s.commit()
+        logging.info(link)
+        flash('Link added for {}: {}'.format(link_for, url_for('view', uid=uid, _external=True, _scheme='https')))
+        return redirect(url_for('admin'))
+    finally:
+        s.close()
 
 @application.route('/sekkreturl/send', methods=['POST'])
 def send():
@@ -75,28 +79,34 @@ def send():
     body = request.form['md']
     logging.info('Making post: %s', title)
     s = get_session()
-    s.add(Post(title=title, body=body))
-    s.commit()
-    s.close()
-    return redirect(url_for('admin'))
+    try:
+        s.add(Post(title=title, body=body))
+        s.commit()
+        return redirect(url_for('admin'))
+    finally:
+        s.close()
 
 @application.route('/<uid>')
 def view(uid):
     logging.info('Viewing uid %s', uid)
     s = get_session()
-    link = s.query(Link).filter_by(uid=uid).one()
-    title = link.post.title
-    md = markdown2.markdown(link.post.body)
-    s.add(Visit(link_id=link.id,
-                dt=datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                ip=request.remote_addr,
-                ref=request.referrer))
-    s.commit()
-    s.close()
-    tracker = hashlib.sha256(uid.encode()).hexdigest()[:16]
-    resp = make_response(render_template('post.html', body=md, title=title, tracker=tracker))
-    resp.headers['Referrer-Policy'] = 'unsafe-url'
-    return resp
+    try:
+        link = s.query(Link).filter_by(uid=uid).first()
+        if link is None:
+            return '', 404
+        title = link.post.title
+        md = markdown2.markdown(link.post.body)
+        s.add(Visit(link_id=link.id,
+                    dt=datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                    ip=request.remote_addr,
+                    ref=request.referrer))
+        s.commit()
+        tracker = hashlib.sha256(uid.encode()).hexdigest()[:16]
+        resp = make_response(render_template('post.html', body=md, title=title, tracker=tracker))
+        resp.headers['Referrer-Policy'] = 'unsafe-url'
+        return resp
+    finally:
+        s.close()
 
 if __name__ == "__main__":
     application.run()
