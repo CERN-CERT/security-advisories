@@ -12,23 +12,6 @@ from flask_dance.consumer import OAuth2ConsumerBlueprint
 from oauthlib.oauth2.rfc6749.errors import InvalidGrantError, TokenExpiredError
 
 
-# dictConfig({
-    # 'version': 1,
-    # 'formatters': {'default': {
-        # 'format': '[%(asctime)s] %(levelname)s: %(message)s',
-    # }},
-    # 'handlers': {'wsgi': {
-        # 'class': 'logging.StreamHandler',
-        # 'stream': 'ext://flask.logging.wsgi_errors_stream',
-        # 'formatter': 'default'
-    # }},
-    # 'root': {
-        # 'level': 'INFO',
-        # 'handlers': ['wsgi']
-    # }
-# })
-
-
 application = Flask(__name__)
 application.wsgi_app = ProxyFix(application.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1, x_prefix=1)
 
@@ -36,49 +19,7 @@ application.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 application.config['SERVER_NAME'] = os.getenv('SERVER_NAME')
 
 
-# oauth = OAuth2ConsumerBlueprint(
-    # 'cern_oauth',
-    # __name__,
-    # client_id=os.getenv('OAUTH_CLIENT_ID'),
-    # client_secret=os.getenv('OAUTH_CLIENT_SECRET'),
-    # token_url='https://oauth.web.cern.ch/OAuth/Token',
-    # authorization_url='https://oauth.web.cern.ch/OAuth/Authorize',
-    # login_url='/oauth/cern',
-    # authorized_url='/oauth/cern/authorized',
-# )
-# application.oauth = oauth
-# application.register_blueprint(oauth)
-
-
-# def require_auth(func):
-    # def wrapper(*args, **kwargs):
-        # return func(*args, **kwargs)
-        # if current_app.oauth.token:
-            # try:
-                # user_details = oauth.session.get(
-                    # 'https://oauthresource.web.cern.ch/api/User')
-                # user_details.raise_for_status()
-                # # user_data = user_details.json()
-                # # username = user_data['username'].strip()
-                # egroup_membership = current_app.oauth.session.get(
-                    # 'https://oauthresource.web.cern.ch/api/Groups')
-                # egroup_membership.raise_for_status()
-                # groups = egroup_membership.json()['groups']
-                # logging.debug('OAuth groups: %s', groups)
-                # if any(group in groups for group in current_app.config['app']['auth_egroups']):
-                    # return func(*args, **kwargs)
-                # else:
-                    # return 'Unauthorized', 401
-            # except (InvalidGrantError, TokenExpiredError) as e:
-                # logging.warn(e)
-                # pass
-        # return redirect(url_for('cern_oauth.login'))
-    # wrapper.func_name = func.func_name
-    # return wrapper
-
-
-# @require_auth
-@application.route('/sekkreturl/info/<pid>', methods=['GET', 'POST'])
+@application.route('/admin/info/<pid>', methods=['GET', 'POST'])
 def info(pid):
     s = get_session()
     try:
@@ -109,8 +50,7 @@ def info(pid):
         s.close()
 
 
-# @require_auth
-@application.route('/sekkreturl/admin')
+@application.route('/admin')
 def admin():
     s = get_session()
     posts = [(p.id, p.title) for p in s.query(Post).all()]
@@ -119,8 +59,7 @@ def admin():
     return render_template('admin.html', posts=posts)
 
 
-# @require_auth
-@application.route('/sekkreturl/newlink', methods=['POST'])
+@application.route('/admin/newlink', methods=['POST'])
 def newlink():
     uid = str(uuid.uuid1()).replace('-', '')
     link_for = request.form['linkfor']
@@ -137,8 +76,7 @@ def newlink():
         s.close()
 
 
-# @require_auth
-@application.route('/sekkreturl/dellink/<linkid>', methods=['POST'])
+@application.route('/admin/dellink/<linkid>', methods=['POST'])
 def dellink(linkid):
     s = get_session()
     try:
@@ -151,8 +89,7 @@ def dellink(linkid):
         s.close()
 
 
-# @require_auth
-@application.route('/sekkreturl/send', methods=['POST'])
+@application.route('/admin/send', methods=['POST'])
 def send():
     title = request.form['title']
     body = request.form['md']
