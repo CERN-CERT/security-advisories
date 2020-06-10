@@ -4,7 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker, backref
 from sqlalchemy import create_engine
 
-from .config import DB_URL
+from config import DB_URL
 
 Base = declarative_base()
 

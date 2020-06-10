@@ -6,8 +6,8 @@ from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash, make_response
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-from .db import get_session, Post, Link, Visit
-from .config import SECRET_KEY, SERVER_NAME
+from db import get_session, Post, Link, Visit
+from config import SECRET_KEY, SERVER_NAME
 
 
 application = Flask(__name__)
