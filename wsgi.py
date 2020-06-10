@@ -1,22 +1,20 @@
-import os
 import hashlib
 import uuid
 import logging
 import markdown
 from datetime import datetime
-from logging.config import dictConfig
-from flask import Flask, render_template, request, redirect, url_for, flash, make_response, current_app
-from db import get_session, Post, Link, Visit
+from flask import Flask, render_template, request, redirect, url_for, flash, make_response
 from werkzeug.middleware.proxy_fix import ProxyFix
-from flask_dance.consumer import OAuth2ConsumerBlueprint
-from oauthlib.oauth2.rfc6749.errors import InvalidGrantError, TokenExpiredError
+
+from .db import get_session, Post, Link, Visit
+from .config import SECRET_KEY, SERVER_NAME
 
 
 application = Flask(__name__)
 application.wsgi_app = ProxyFix(application.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1, x_prefix=1)
 
-application.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
-application.config['SERVER_NAME'] = os.getenv('SERVER_NAME')
+application.config['SECRET_KEY'] = SECRET_KEY
+application.config['SERVER_NAME'] = SERVER_NAME
 
 
 @application.route('/admin/info/<pid>', methods=['GET', 'POST'])

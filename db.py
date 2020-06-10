@@ -1,9 +1,10 @@
-import os
 import logging
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker, backref
 from sqlalchemy import create_engine
+
+from .config import DB_URL
 
 Base = declarative_base()
 
@@ -37,7 +38,7 @@ class Visit(Base):
     ref = Column(String(1000))
 
 
-engine = create_engine(os.getenv('DB_URL'))
+engine = create_engine(DB_URL)
 logging.info('Creating tables')
 Base.metadata.create_all(engine)
 Base.metadata.bind = engine
