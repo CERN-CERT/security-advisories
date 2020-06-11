@@ -3,6 +3,7 @@ import uuid
 import logging
 import markdown
 import pytz
+from logging.config import dictConfig
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash, make_response
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -10,6 +11,29 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from db import get_session, Post, Link, Visit
 from config import SECRET_KEY, SERVER_NAME
 
+dictConfig({
+    'version': 1,
+    'formatters': {'default': {
+        'format': '[%(asctime)s] %(levelname)s: %(message)s',
+    }},
+    'handlers': {'wsgi': {
+        'class': 'logging.StreamHandler',
+        'stream': 'ext://flask.logging.wsgi_errors_stream',
+        'formatter': 'default'
+    }},
+    'root': {
+        'level': 'INFO',
+        'handlers': ['wsgi']
+    },
+    'werkzeug': {
+        'level': 'INFO',
+        'handlers': ['wsgi']
+    },
+    '': {
+        'level': 'INFO',
+        'handlers': ['wsgi']
+    }
+})
 
 application = Flask(__name__)
 application.wsgi_app = ProxyFix(application.wsgi_app, x_for=2, x_proto=2, x_host=2, x_port=2, x_prefix=2)
@@ -105,6 +129,7 @@ def send():
 @application.route('/<uid>')
 def view(uid):
     logging.info('Viewing uid %s ip %s ref %s', uid, request.remote_addr, request.referrer)
+    logging.debug('Headers: %s', str(request.headers))
     s = get_session()
     try:
         link = s.query(Link).filter_by(uid=uid).first()
