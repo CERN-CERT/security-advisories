@@ -2,6 +2,7 @@ import hashlib
 import uuid
 import logging
 import markdown
+import pytz
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash, make_response
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -11,7 +12,7 @@ from config import SECRET_KEY, SERVER_NAME
 
 
 application = Flask(__name__)
-application.wsgi_app = ProxyFix(application.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1, x_prefix=1)
+application.wsgi_app = ProxyFix(application.wsgi_app, x_for=2, x_proto=2, x_host=2, x_port=2, x_prefix=2)
 
 application.config['SECRET_KEY'] = SECRET_KEY
 application.config['SERVER_NAME'] = SERVER_NAME
@@ -112,7 +113,7 @@ def view(uid):
         title = link.post.title
         md = markdown.markdown(link.post.body, extensions=['tables', 'fenced_code', 'sane_lists'])
         s.add(Visit(link_id=link.id,
-                    dt=datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                    dt=datetime.now(pytz.timezone('Europe/Zurich')).strftime('%Y-%m-%d %H:%M:%S'),
                     ip=request.remote_addr,
                     ref=request.referrer))
         s.commit()
