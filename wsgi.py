@@ -22,15 +22,15 @@ dictConfig({
         'formatter': 'default'
     }},
     'root': {
-        'level': 'INFO',
+        'level': 'DEBUG',
         'handlers': ['wsgi']
     },
     'werkzeug': {
-        'level': 'INFO',
+        'level': 'DEBUG',
         'handlers': ['wsgi']
     },
     '': {
-        'level': 'INFO',
+        'level': 'DEBUG',
         'handlers': ['wsgi']
     }
 })
