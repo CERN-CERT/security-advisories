@@ -112,8 +112,9 @@ def view(uid):
             return '', 404
         title = link.post.title
         md = markdown.markdown(link.post.body, extensions=['tables', 'fenced_code', 'sane_lists'])
+        utctime = pytz.utc.localize(datetime.utcnow())
         s.add(Visit(link_id=link.id,
-                    dt=datetime.now(pytz.timezone('Europe/Zurich')).strftime('%Y-%m-%d %H:%M:%S'),
+                    dt=utctime.astimezone(pytz.timezone('Europe/Zurich')).strftime('%Y-%m-%d %H:%M:%S'),
                     ip=request.remote_addr,
                     ref=request.referrer))
         s.commit()
