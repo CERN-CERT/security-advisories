@@ -9,6 +9,9 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - pglogs:/var/log/postgresql
     
   app:
     image: security-advisory:latest
@@ -18,9 +21,9 @@ services:
     entrypoint: gunicorn wsgi:application --bind 0.0.0.0:5000
     healthcheck:
       test: curl --fail http://localhost:5000/admin || exit 1
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      interval: 2s
+      timeout: 10s
+      retries: 10
     depends_on: 
       db:
         condition: service_healthy
@@ -40,3 +43,5 @@ services:
     
 volumes:
   logs:
+  pgdata:
+  pglogs:
