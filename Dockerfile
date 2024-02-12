@@ -14,9 +14,6 @@ FROM python:3.11.8-slim
 COPY --from=BUILDER /app /app
 WORKDIR /app
 
-RUN apt update && \
-    apt install -y curl && \
-    mkdir -p /config
+RUN apt update && apt install -y curl
 
-COPY config.ini /config/config.ini
 ENV PATH="/app/.venv/bin:$PATH"
