@@ -8,38 +8,38 @@ A simple service providing Markdown document sharing with contacts.
 
 ## Deployment
 
-### Dependencies
-Project dependencies are set in `requirements.txt`. Using `pip`, execute the following to install dependencies:
-
-```shell
-pip install -r requirements.txt 
-```
-
 ### Configuration
-For `advisories` deployment, a `config.ini` configuration file with the following structure is required:
+create a `.env` file with the following variables. Replace the default passwords/keys with something more secure. 
 
-```ini
-[config]
-; Database URI for Flask SQLAlchemy.
-DB_URL=db_url
-; Secret key to cryptographically sign session cookies.
-SECRET_KEY=secret_key
+```
+### postgresdb vars
+POSTGRES_DB=postgres
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=some-db-password
+
+### app vars
+DB_URL=postgresql://postgres:some-password@db:5432/postgres
+SECRET_KEY=some-secret-key
+#SERVER_NAME=
 ```
 
 ### Setup
-As this is a Flask application, there are many popular deployment options for serving `advisories`. At the moment, the proposed WSGI container is `Gunicorn`. Use as follows:
+As this is a Flask application, there are many popular deployment options for serving `advisories`. At the moment, the proposed WSGI container is using docker compose.
 
+Build the app image
+```
+docker compose build --no-cache
+```
+
+Run the app 
 ```shell
-gunicorn -b 127.0.0.1:8000 wsgi
+docker compose up -d
 ```
 
 By default, `3` processes and `1` thread are used for `Gunicorn`. Those values can be altered by setting the environment variables below:
 
 * `GUNICORN_PROCESSES`
 * `GUNICORN_THREADS`
-
-
-For alternative WSGI containers, please consult the official Flask [documentation](https://flask.palletsprojects.com/en/2.0.x/deploying/index.html).
 
 ## Usage
 
